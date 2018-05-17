@@ -10,3 +10,6 @@ mongodb://gabikiwi:<PASSWORD>@cluster0-shard-00-00-ozmxi.mongodb.net:27017,clust
 
 ###
 Promise.all([promise1, promise2])
+
+### MockUp call
+curl https://jsonplaceholder.typicode.com/posts/1

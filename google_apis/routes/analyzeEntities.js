@@ -23,6 +23,7 @@ const analyzeEntities = function analyzeEntitiesOfText(res, text) {
             document: document
         })
         .then(results => {
+
             const entities = results[0].entities;
 
             console.log('Entities:');
@@ -31,25 +32,43 @@ const analyzeEntities = function analyzeEntitiesOfText(res, text) {
                 console.log(` - Type: ${entity.type}, Salience: ${entity.salience}`);
                 if (entity.metadata && entity.metadata.wikipedia_url) {
                     console.log(` - Wikipedia URL: ${entity.metadata.wikipedia_url}$`);
-                    return res.status(201).json({
-                        message: 'Acesta e raspunsul la requestul POST pentru Analiza Entitati venit de la Google NL API',
-                        InputText: document.content,
-                        "Entity name": entity.name,
-                        "Entity Type": entity.type,
-                        "Entity Salience": entity.salience,
-                        "Entity - Wikipedia URL:": entity.metadata.wikipedia_url,
-                        everthing: entities
-                    });
+                    /* return res.status(201).json({
+                         message: 'Acesta e raspunsul la requestul POST pentru Analiza Entitati venit de la Google NL API',
+                         InputText: document.content,
+                         "Entity name": entity.name,
+                         "Entity Type": entity.type,
+                         "Entity Salience": entity.salience,
+                         "Entity - Wikipedia URL:": entity.metadata.wikipedia_url,
+                         everthing: entities 
+                     });*/
+                }
+
+                var EntitiesNameMap = entities.map((entity) => entity.name);
+                var EntitiesSalienceMap = entities.map((entity) => entity.salience);
+                var EntitiesTypeMap = entities.map((entity) => entity.type);
+                var EntitiesWikiMap = entities.map((entity) => entity.metadata.wikipedia_url);
+
+
+                let ResponseCustom = [];
+
+                for (var i = 0; i < EntitiesNameMap.length; i++) {
+
+                    var obj = {
+                        'name': EntitiesNameMap[i],
+                        'salience': EntitiesSalienceMap[i],
+                        'type': EntitiesTypeMap[i],
+                        'Wiki': EntitiesWikiMap[i]
+                    }
+                    ResponseCustom.push(obj);
                 }
                 return res.status(201).json({
                     message: 'Acesta e raspunsul la requestul POST de la Google pentru Entities',
                     input: document.content,
-                    "Entity name": entity.name,
-                    "Entity Type": entity.type,
-                    "Entity Salience": entity.salience,
-                    "Entity - Wikipedia URL:": "nu exista",
-                    everthing: entities
+                    entities: ResponseCustom
+
                 });
+
+
             });
 
 
