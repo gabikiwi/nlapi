@@ -4,16 +4,27 @@ const language = require('@google-cloud/language');
 const router = express.Router();
 
 // Business Logic
-const test  =   require('./test');
+const test = require('./test');
+
 const analyzeSentiment = require('./analyzeSentiment');
+const analyzeSentimentFile = require('./analyzeSentimentInFile');
+
 const analyzeEntities = require('./analyzeEntities');
+const analyzeEntitiesFile = require('./analyzeEntitiesInFile');
+
 const analyzeSyntax = require('./analyzeSyntax');
+
+
+
+// Storage
+const filesToGCS = require('./filesUploadToGCS');
+const filesDeleteFromGCS = require('./filesDeleteFromGCS');
+const getFilesFromBucket = require('./filesListFromBucket');
 
 
 //Handling file upload with multer
 //const multer = require('multer');
 const Multer = require('multer');
-const filesToGCS = require('./filesToGCS');
 
 // 1. The simplest way to upload a file
 // Const upload = multer({dest:'uploads/'});
@@ -28,28 +39,13 @@ const multer = Multer({
 });
 //const upload = multer ({storage:storage});
 
-/* const multer = Multer({
-    storage: Multer.MemoryStorage,
-    fileSize: 5 * 1024 * 1024
-  });*/
-
-// Storage
-const getFilesFromBucket = require('./getFilesFromBucket');
-
-
 router.get('/nlp', (req, res, next) => {
     res.status(200).json({
         message: 'Handling GET requests to /nlp'
     });
 });
 
-router.post('/nlp/file-upload', multer.single('fileUpload'), filesToGCS.sendUploadToGCS, (req, res, next) => {
-    const data = req.body;
-    if (req.file && req.file.cloudStoragePublicUrl) {
-      data.imageUrl = req.file.cloudStoragePublicUrl;
-    }
-    response.send(data);
-  })
+
 
 
 router.post('/nlp/analyzeSentiment', (req, res, next) => {
@@ -60,6 +56,19 @@ router.post('/nlp/analyzeSentiment', (req, res, next) => {
     }
 
     analyzeSentiment(res,nlpPOSTReq.text);
+
+});
+
+router.post('/nlp/analyzeSentimentInFile', (req, res, next) => {
+    
+  
+    console.log(req.body.fileName);
+    // create a POST request 
+    const nlpPOSTReq = {
+        file_name: req.body.fileName
+    }
+
+    analyzeSentimentFile(res,nlpPOSTReq.file_name);
 
 });
 
@@ -77,13 +86,13 @@ router.post('/nlp/analyzeEntities', (req, res, next) => {
 router.post('/nlp/analyzeEntitiesInFile', (req, res, next) => {
 
     // this is an object which multer give us
-    console.log(req.file);
+    console.log(req.body.fileName);
     // create a POST request 
     const nlpPOSTReq = {
-        text: req.body.paramText
+        file_name: req.body.fileName
     }
 
-    analyzeEntities(res,nlpPOSTReq.text);
+    analyzeEntitiesFile(res,nlpPOSTReq.file_name);
 
 
 });
@@ -126,19 +135,18 @@ router.post('/nlp/classifyTextInFile', (req, res, next) => {
 
 });
 
-router.get('/nlp/:nlpId', (req, res, next) => {
-    const id = req.params.nlpId;
-    if (id === 'special') {
-        res.status(200).json({
-            message: 'You discovered the special ID',
-            id: id
-        });
-    } else {
-        res.status(200).json({
-            message: 'You passed an ID'
-        });
-    }
+router.delete('/nlp/files/:fileName', (req, res, next) => {
+
+    const file_name = req.params.fileName;
+    console.log(file_name);
+    filesDeleteFromGCS(file_name);
+
+    res.status(200).json({
+        message: `Deleted ${file_name} from Google Cloud`
+    });
+
 });
+
 
 router.patch('/nlp/:nlpId', (req, res, next) => {
     const id = req.params.nlpId;
@@ -148,10 +156,6 @@ router.patch('/nlp/:nlpId', (req, res, next) => {
     });
 });
 
-router.delete('/nlp/:nlpId', (req, res, next) => {
-    res.status(200).json({
-        message: 'Deleted nlpId!'
-    });
-});
+
 
 module.exports = router;
