@@ -45,7 +45,18 @@ router.get('/nlp', (req, res, next) => {
     });
 });
 
+router.post('/nlp/file-upload', multer.single('fileUpload'), filesToGCS.sendUploadToGCS, (req, res, next) => {
+    const data = req.body;
+    if (req.file && req.file.cloudStoragePublicUrl) {
+      data.imageUrl = req.file.cloudStoragePublicUrl;
+    }
+    res
+    .send(data)
+    .status(201).json({
+        message: `File ${file.originalname} uploaded to Google Cloud!`,
+    });
 
+  })
 
 
 router.post('/nlp/analyzeSentiment', (req, res, next) => {

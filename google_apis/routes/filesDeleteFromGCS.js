@@ -15,7 +15,7 @@ console.log(bucket.name);
 /**
  * TODO(developer): Uncomment the following lines before running the sample.
  */
-// const bucketName = 'Name of a bucket, e.g. my-bucket';
+//const bucketName = 'Name of a bucket, e.g. my-bucket';
 //const filename = '1526541002742bbccccaandroid_text.5_en.txt';
 
 // Deletes the file from the bucket
